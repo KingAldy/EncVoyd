@@ -1,40 +1,105 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Encrypted HTML — Enter password</title>
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Encrypted (Auto) — Loading</title>
 <style>
   :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-  body{display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#0f172a;color:#e6eef8}
-  .card{width:min(920px,96%);background:linear-gradient(180deg,#071029 0%, #0b1830 100%);padding:28px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-  h1{margin:0 0 12px;font-size:20px}
-  p{margin:0 0 18px;color:#9fb0d6}
-  .row{display:flex;gap:8px}
-  input[type=password]{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit}
-  button{padding:10px 14px;border-radius:8px;border:0;background:#1e90ff;color:white;cursor:pointer}
-  .note{margin-top:12px;font-size:13px;color:#a6bfdf}
-  .loader{margin:18px auto 0;width:64px;height:8px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;position:relative}
-  .loader > i{position:absolute;left:-30%;top:0;height:100%;width:30%;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);animation:move 1.3s linear infinite}
+  body{display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#071029;color:#e6eef8}
+  .card{width:min(980px,96%);background:linear-gradient(180deg,#071029 0%, #0b1830 100%);padding:20px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+  .loader{height:8px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;position:relative}
+  .loader>i{position:absolute;left:-30%;top:0;height:100%;width:30%;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);animation:move 1.2s linear infinite}
   @keyframes move{from{left:-30%}to{left:130%}}
-  iframe.contentFrame{width:100%;height:70vh;border:0;border-radius:8px;margin-top:18px;background:white}
-  .hidden{display:none}
-</style>
-</head>
+  iframe{width:100%;height:75vh;border:0;border-radius:8px;margin-top:16px;background:#fff}
+  .muted{color:#9fb0d6;font-size:13px}
+</style></head>
 <body>
 <div class="card" id="card">
-  <h1>Encrypted HTML — Masukkan password</h1>
-  <p>Halaman ini berisi HTML terenkripsi. Masukkan password yang benar untuk melihat konten. (Menggunakan AES-256-GCM + PBKDF2 di browser — aman, tanpa eval.)</p>
-
-  <div class="row">
-    <input id="pw" type="password" placeholder="Password..." />
-    <button id="go">Decrypt & Open</button>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <h3 style="margin:0 0 6px">Encrypted — Auto-decrypt</h3>
+      <div class="muted">Halaman ini akan otomatis menampilkan konten. (Note: password tersimpan di file — bukan proteksi kuat)</div>
+    </div>
+    <div style="width:200px">
+      <div class="loader"><i></i></div>
+      <div id="st" class="muted" style="text-align:right;margin-top:8px">Preparing…</div>
+    </div>
   </div>
-  <div class="note">Password tidak dikirim ke server — proses dekripsi terjadi di browser.</div>
 
-  <div id="status" class="hidden">
-    <div class="loader"><i></i></div>
-    <div style="text-align:center;margin-top:8px;color:#cfe6ff;font-size:13px" id="sttext">Processing…</div>
+  <iframe id="viewer" sandbox="allow-same-origin allow-scripts allow-forms" class="hidden"></iframe>
+</div>
+
+<script id="payload" type="application/json">{"v":1,"iters":150000,"salt":"KB90y3gZEFopaFRcCoZaaw==","iv":"L2AFVlQ4nQHl4l7r","tag":"mdFLXMv65xroZS906BVWsA==","data":"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","origFilename":"xata.html","autoKey":"eGF0YSBicm93"}</script>
+
+<script>
+(async function(){
+  const p = JSON.parse(document.getElementById('payload').textContent);
+  const st = document.getElementById('st');
+  const viewer = document.getElementById('viewer');
+
+  function b64ToBuf(b64){ return Uint8Array.from(atob(b64), c => c.charCodeAt(0)); }
+  function bufToStr(buf){ return new TextDecoder().decode(buf); }
+  function atobUtf8(b64) { try { return decodeURIComponent(escape(atob(b64))); } catch(e){ return atob(b64); } }
+
+  async function deriveKey(password, saltB, iterations) {
+    const enc = new TextEncoder();
+    const keyMaterial = await window.crypto.subtle.importKey('raw', enc.encode(password), {name:'PBKDF2'}, false, ['deriveKey']);
+    return window.crypto.subtle.deriveKey({name:'PBKDF2', salt: saltB, iterations: iterations, hash:'SHA-256'}, keyMaterial, {name:'AES-GCM', length:256}, false, ['decrypt']);
+  }
+
+  async function decryptPkgWithPassword(password) {
+    const salt = b64ToBuf(p.salt);
+    const iv = b64ToBuf(p.iv);
+    const tag = b64ToBuf(p.tag);
+    const data = b64ToBuf(p.data);
+    const combined = new Uint8Array(data.length + tag.length);
+    combined.set(data,0); combined.set(tag,data.length);
+
+    const key = await deriveKey(password, salt, p.iters || 150000);
+    const plain = await window.crypto.subtle.decrypt({name:'AES-GCM', iv: iv, tagLength: 128}, key, combined.buffer);
+    return bufToStr(new Uint8Array(plain));
+  }
+
+  try {
+    st.textContent = 'Deriving key…';
+    // if autoKey present, use it; autoKey is base64(password)
+    let password = null;
+    if (p.autoKey) {
+      try {
+        // try decode utf8-safe
+        password = atobUtf8(p.autoKey);
+      } catch (e) {
+        password = atob(p.autoKey);
+      }
+    } else {
+      // No autoKey — cannot auto-decrypt
+      throw new Error('No autoKey embedded for auto-decrypt.');
+    }
+
+    // small wait for animation
+    await new Promise(r => setTimeout(r, 140));
+    st.textContent = 'Decrypting…';
+
+    const html = await decryptPkgWithPassword(password);
+    st.textContent = 'Rendering…';
+
+    // render into iframe
+    viewer.classList.remove('hidden');
+    viewer.srcdoc = html;
+
+    // hide loader text
+    st.textContent = 'Done';
+  } catch (err) {
+    console.error(err);
+    st.textContent = 'Failed to auto-decrypt — file may be corrupted.';
+    // show an error fallback (allow user to enter password manually)
+    const fallback = document.createElement('div');
+    fallback.style.marginTop='12px';
+    fallback.innerHTML = '<div style="color:#ffb4b4">Auto-decrypt gagal. Jika kamu memiliki password, buka console atau gunakan versi manual.</div>';
+    document.getElementById('card').appendChild(fallback);
+  }
+})();
+</script>
+</body>
+</html>    <div style="text-align:center;margin-top:8px;color:#cfe6ff;font-size:13px" id="sttext">Processing…</div>
   </div>
 
   <iframe id="viewer" class="contentFrame hidden" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
